@@ -13,6 +13,7 @@
 
   <ItemGroup>
     <Resource Include="Assets\ShutdownTimer.ico" />
+    <Resource Include="Assets\app-logo.png" />
     <Content Include="background.mp4" Condition="Exists('background.mp4')">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
