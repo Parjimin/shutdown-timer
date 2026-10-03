@@ -1,0 +1,70 @@
+name: Release
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - VERSION
+      - ".github/workflows/release.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET 8
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "8.0.x"
+
+      - name: Read version
+        id: version
+        shell: pwsh
+        run: |
+          $version = (Get-Content VERSION -Raw).Trim()
+          if ([string]::IsNullOrWhiteSpace($version)) { throw "VERSION file is empty." }
+          "version=$version" >> $env:GITHUB_OUTPUT
+          "tag=v$version" >> $env:GITHUB_OUTPUT
+
+      - name: Publish Lite
+        shell: pwsh
+        run: dotnet publish .\ShutdownTimer.csproj -c Release -r win-x64 --self-contained false -p:PublishSingleFile=true -p:DebugType=None -p:DebugSymbols=false -o .\release\lite
+
+      - name: Publish Portable
+        shell: pwsh
+        run: dotnet publish .\ShutdownTimer.csproj -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -p:EnableCompressionInSingleFile=true -p:DebugType=None -p:DebugSymbols=false -o .\release\portable
+
+      - name: Package downloads
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force -Path .\dist | Out-Null
+          Compress-Archive -Path .\release\lite\* -DestinationPath .\dist\ShutdownTimer-Lite-win-x64.zip -Force
+          Compress-Archive -Path .\release\portable\* -DestinationPath .\dist\ShutdownTimer-Portable-win-x64.zip -Force
+          $files = Get-ChildItem .\dist\*.zip
+          $lines = foreach ($file in $files) {
+            $hash = (Get-FileHash $file.FullName -Algorithm SHA256).Hash.ToLowerInvariant()
+            "$hash  $($file.Name)"
+          }
+          $lines | Set-Content .\dist\SHA256SUMS.txt
+
+      - name: Create or update GitHub Release
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ steps.version.outputs.version }}
+          TAG: ${{ steps.version.outputs.tag }}
+        run: |
+          $notes = "Windows x64 builds. Portable includes the .NET runtime. Lite requires the .NET 8 Desktop Runtime. To add your own background, put an MP4 named background.mp4 next to ShutdownTimer.exe. No copyrighted background media is bundled."
+          gh release view $env:TAG --repo "${{ github.repository }}" *> $null
+          if ($LASTEXITCODE -eq 0) {
+            gh release upload $env:TAG .\dist\ShutdownTimer-Lite-win-x64.zip .\dist\ShutdownTimer-Portable-win-x64.zip .\dist\SHA256SUMS.txt --clobber --repo "${{ github.repository }}"
+          } else {
+            gh release create $env:TAG .\dist\ShutdownTimer-Lite-win-x64.zip .\dist\ShutdownTimer-Portable-win-x64.zip .\dist\SHA256SUMS.txt --target "${{ github.sha }}" --title "Shutdown Timer $env:VERSION" --notes $notes --repo "${{ github.repository }}"
+          }
