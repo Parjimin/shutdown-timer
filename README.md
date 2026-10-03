@@ -15,6 +15,7 @@ A small Windows shutdown scheduler with a clean 16:9 WPF interface, countdown, q
 - Live countdown and scheduled shutdown time
 - Cancel a pending shutdown at any time
 - 16:9 borderless WPF interface
+- Custom crimson power app icon
 - Optional looping MP4 background
 - Hidden hover control to pause/resume the background video
 - Crash log written to `%LOCALAPPDATA%\ShutdownTimer\crash.log`
