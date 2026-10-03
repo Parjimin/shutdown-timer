@@ -1,0 +1,552 @@
+<Window x:Class="ShutdownTimer.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Shutdown Timer"
+        Width="1152"
+        Height="648"
+        WindowStartupLocation="CenterScreen"
+        WindowStyle="None"
+        ResizeMode="NoResize"
+        Background="#080609"
+        FontFamily="Segoe UI"
+        Foreground="#F6F3F1"
+        Loaded="Window_Loaded"
+        KeyDown="Window_KeyDown">
+
+    <Window.Resources>
+        <SolidColorBrush x:Key="Ivory" Color="#F3EEE8"/>
+        <SolidColorBrush x:Key="Ink" Color="#171419"/>
+        <SolidColorBrush x:Key="DarkButton" Color="#211A20"/>
+        <SolidColorBrush x:Key="DarkButtonHover" Color="#30252D"/>
+        <SolidColorBrush x:Key="Crimson" Color="#8F1534"/>
+        <SolidColorBrush x:Key="CrimsonHover" Color="#A91A3F"/>
+
+        <Style x:Key="SolidButtonStyle" TargetType="Button">
+            <Setter Property="Height" Value="46"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="Root"
+                                Background="{TemplateBinding Background}"
+                                CornerRadius="12"
+                                SnapsToDevicePixels="True">
+                            <ContentPresenter HorizontalAlignment="Center"
+                                              VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="Root" Property="Opacity" Value=".86"/>
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter TargetName="Root" Property="Opacity" Value=".45"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="PresetButtonStyle" TargetType="Button">
+            <Setter Property="Height" Value="31"/>
+            <Setter Property="Padding" Value="11,0"/>
+            <Setter Property="Background" Value="{StaticResource DarkButton}"/>
+            <Setter Property="Foreground" Value="#D8D1D5"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="FontSize" Value="10"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="Root"
+                                Background="{TemplateBinding Background}"
+                                CornerRadius="9">
+                            <ContentPresenter HorizontalAlignment="Center"
+                                              VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Root" Property="Opacity" Value=".92"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="Root" Property="Opacity" Value=".78"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="StepButtonStyle" TargetType="Button">
+            <Setter Property="Width" Value="25"/>
+            <Setter Property="Height" Value="24"/>
+            <Setter Property="Background" Value="{StaticResource DarkButton}"/>
+            <Setter Property="Foreground" Value="#D8D1D5"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="FontSize" Value="9"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}"
+                                CornerRadius="7">
+                            <ContentPresenter HorizontalAlignment="Center"
+                                              VerticalAlignment="Center"/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="WindowButtonStyle" TargetType="Button">
+            <Setter Property="Width" Value="38"/>
+            <Setter Property="Height" Value="30"/>
+            <Setter Property="Margin" Value="4,0,0,0"/>
+            <Setter Property="Background" Value="#6A171419"/>
+            <Setter Property="Foreground" Value="#E4DEE1"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="FontSize" Value="15"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}"
+                                CornerRadius="9">
+                            <ContentPresenter HorizontalAlignment="Center"
+                                              VerticalAlignment="Center"/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="TimeTextStyle" TargetType="TextBox">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="FontSize" Value="25"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="VerticalContentAlignment" Value="Top"/>
+            <Setter Property="Padding" Value="13,8,35,18"/>
+            <Setter Property="CaretBrush" Value="White"/>
+            <Setter Property="SelectionBrush" Value="#80C31D43"/>
+        </Style>
+    </Window.Resources>
+
+    <Grid x:Name="RootGrid">
+        <MediaElement x:Name="BackgroundVideo"
+                      LoadedBehavior="Manual"
+                      UnloadedBehavior="Manual"
+                      Stretch="UniformToFill"
+                      IsMuted="True"
+                      ScrubbingEnabled="True"
+                      MediaEnded="BackgroundVideo_MediaEnded"
+                      MediaFailed="BackgroundVideo_MediaFailed"/>
+
+        <Rectangle IsHitTestVisible="False">
+            <Rectangle.Fill>
+                <LinearGradientBrush StartPoint="0,0.5" EndPoint="1,0.5">
+                    <GradientStop Color="#F2050406" Offset="0"/>
+                    <GradientStop Color="#CB050406" Offset=".31"/>
+                    <GradientStop Color="#4A050406" Offset=".58"/>
+                    <GradientStop Color="#10050406" Offset=".78"/>
+                    <GradientStop Color="#38050406" Offset="1"/>
+                </LinearGradientBrush>
+            </Rectangle.Fill>
+        </Rectangle>
+
+        <Rectangle IsHitTestVisible="False">
+            <Rectangle.Fill>
+                <LinearGradientBrush StartPoint="0.5,1" EndPoint="0.5,0">
+                    <GradientStop Color="#B0080508" Offset="0"/>
+                    <GradientStop Color="#1A080508" Offset=".42"/>
+                    <GradientStop Color="#42080508" Offset="1"/>
+                </LinearGradientBrush>
+            </Rectangle.Fill>
+        </Rectangle>
+
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="58"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+
+            <Border Grid.Row="0"
+                    Background="#47060507"
+                    BorderBrush="#14FFFFFF"
+                    BorderThickness="0,0,0,1"
+                    MouseLeftButtonDown="TopBar_MouseLeftButtonDown">
+                <Grid Margin="24,0,16,0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+
+                    <StackPanel Orientation="Horizontal"
+                                VerticalAlignment="Center">
+                        <Border Width="30"
+                                Height="30"
+                                CornerRadius="9"
+                                Background="{StaticResource Ivory}">
+                            <TextBlock Text="⏻"
+                                       Foreground="{StaticResource Ink}"
+                                       FontSize="17"
+                                       FontWeight="Bold"
+                                       HorizontalAlignment="Center"
+                                       VerticalAlignment="Center"/>
+                        </Border>
+                        <TextBlock Text="SHUTDOWN TIMER"
+                                   Margin="11,0,0,0"
+                                   VerticalAlignment="Center"
+                                   FontSize="12"
+                                   FontWeight="Bold"/>
+                    </StackPanel>
+
+                    <StackPanel Grid.Column="1"
+                                Orientation="Horizontal"
+                                VerticalAlignment="Center">
+                        <StackPanel Orientation="Horizontal"
+                                    VerticalAlignment="Center"
+                                    Margin="0,0,14,0">
+                            <Ellipse x:Name="StateDot"
+                                     Width="7"
+                                     Height="7"
+                                     Fill="#D94668"
+                                     Margin="0,0,8,0"/>
+                            <TextBlock x:Name="StateText"
+                                       Text="READY"
+                                       Foreground="#A9FFFFFF"
+                                       FontSize="10.5"
+                                       FontWeight="SemiBold"
+                                       VerticalAlignment="Center"/>
+                        </StackPanel>
+                        <Button Style="{StaticResource WindowButtonStyle}"
+                                Content="—"
+                                Click="MinimizeButton_Click"/>
+                        <Button Style="{StaticResource WindowButtonStyle}"
+                                Content="×"
+                                FontSize="18"
+                                Click="CloseButton_Click"/>
+                    </StackPanel>
+                </Grid>
+            </Border>
+
+            <Grid Grid.Row="1" Margin="30,26,30,28">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="445"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+
+                <Border Grid.Column="0"
+                        Background="#A8141014"
+                        BorderBrush="#20FFFFFF"
+                        BorderThickness="1"
+                        CornerRadius="22"
+                        Padding="24">
+                    <Border.Effect>
+                        <DropShadowEffect BlurRadius="34"
+                                          ShadowDepth="9"
+                                          Opacity=".28"
+                                          Color="#000000"/>
+                    </Border.Effect>
+
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+
+                        <Grid Grid.Row="0"
+                              Margin="0,0,0,17">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+
+                            <TextBlock x:Name="CountdownText"
+                                       Text="00:30:00"
+                                       FontSize="47"
+                                       FontWeight="SemiBold"
+                                       VerticalAlignment="Bottom"/>
+
+                            <StackPanel Grid.Column="1"
+                                        VerticalAlignment="Bottom"
+                                        HorizontalAlignment="Right">
+                                <TextBlock Text="STATUS"
+                                           HorizontalAlignment="Right"
+                                           Foreground="#70FFFFFF"
+                                           FontSize="9"
+                                           FontWeight="SemiBold"/>
+                                <TextBlock x:Name="StatusText"
+                                           Text="Belum dijadwalkan"
+                                           Margin="0,4,0,3"
+                                           HorizontalAlignment="Right"
+                                           Foreground="#F2FFFFFF"
+                                           FontSize="10.5"
+                                           FontWeight="SemiBold"/>
+                            </StackPanel>
+                        </Grid>
+
+                        <Border Grid.Row="1"
+                                Height="1"
+                                Background="#16FFFFFF"/>
+
+                        <Grid Grid.Row="2" Margin="0,15,0,0">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="76"/>
+                            </Grid.RowDefinitions>
+
+                            <Grid Margin="1,0,1,8">
+                                <TextBlock Text="Durasi shutdown"
+                                           FontSize="11"
+                                           FontWeight="SemiBold"
+                                           Foreground="#DCFFFFFF"/>
+                                <TextBlock Text="JAM : MENIT : DETIK"
+                                           HorizontalAlignment="Right"
+                                           FontSize="9"
+                                           Foreground="#6FFFFFFF"/>
+                            </Grid>
+
+                            <Grid Grid.Row="1">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="8"/>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="8"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+
+                                <Border Grid.Column="0"
+                                        CornerRadius="13"
+                                        Background="#52040406"
+                                        BorderBrush="#22FFFFFF"
+                                        BorderThickness="1">
+                                    <Grid>
+                                        <TextBox x:Name="HoursBox"
+                                                 Style="{StaticResource TimeTextStyle}"
+                                                 Text="0"
+                                                 MaxLength="2"
+                                                 PreviewTextInput="NumericOnly_PreviewTextInput"
+                                                 TextChanged="TimeBox_TextChanged"
+                                                 LostFocus="TimeBox_LostFocus"/>
+                                        <TextBlock Text="JAM"
+                                                   Margin="14,0,0,8"
+                                                   VerticalAlignment="Bottom"
+                                                   Foreground="#6FFFFFFF"
+                                                   FontSize="8.5"/>
+                                        <StackPanel HorizontalAlignment="Right"
+                                                    VerticalAlignment="Center"
+                                                    Margin="0,0,7,0">
+                                            <Button Style="{StaticResource StepButtonStyle}"
+                                                    Content="▲"
+                                                    Tag="hours:+1"
+                                                    Click="StepButton_Click"/>
+                                            <Button Style="{StaticResource StepButtonStyle}"
+                                                    Content="▼"
+                                                    Margin="0,4,0,0"
+                                                    Tag="hours:-1"
+                                                    Click="StepButton_Click"/>
+                                        </StackPanel>
+                                    </Grid>
+                                </Border>
+
+                                <Border Grid.Column="2"
+                                        CornerRadius="13"
+                                        Background="#52040406"
+                                        BorderBrush="#22FFFFFF"
+                                        BorderThickness="1">
+                                    <Grid>
+                                        <TextBox x:Name="MinutesBox"
+                                                 Style="{StaticResource TimeTextStyle}"
+                                                 Text="30"
+                                                 MaxLength="2"
+                                                 PreviewTextInput="NumericOnly_PreviewTextInput"
+                                                 TextChanged="TimeBox_TextChanged"
+                                                 LostFocus="TimeBox_LostFocus"/>
+                                        <TextBlock Text="MENIT"
+                                                   Margin="14,0,0,8"
+                                                   VerticalAlignment="Bottom"
+                                                   Foreground="#6FFFFFFF"
+                                                   FontSize="8.5"/>
+                                        <StackPanel HorizontalAlignment="Right"
+                                                    VerticalAlignment="Center"
+                                                    Margin="0,0,7,0">
+                                            <Button Style="{StaticResource StepButtonStyle}"
+                                                    Content="▲"
+                                                    Tag="minutes:+1"
+                                                    Click="StepButton_Click"/>
+                                            <Button Style="{StaticResource StepButtonStyle}"
+                                                    Content="▼"
+                                                    Margin="0,4,0,0"
+                                                    Tag="minutes:-1"
+                                                    Click="StepButton_Click"/>
+                                        </StackPanel>
+                                    </Grid>
+                                </Border>
+
+                                <Border Grid.Column="4"
+                                        CornerRadius="13"
+                                        Background="#52040406"
+                                        BorderBrush="#22FFFFFF"
+                                        BorderThickness="1">
+                                    <Grid>
+                                        <TextBox x:Name="SecondsBox"
+                                                 Style="{StaticResource TimeTextStyle}"
+                                                 Text="0"
+                                                 MaxLength="2"
+                                                 PreviewTextInput="NumericOnly_PreviewTextInput"
+                                                 TextChanged="TimeBox_TextChanged"
+                                                 LostFocus="TimeBox_LostFocus"/>
+                                        <TextBlock Text="DETIK"
+                                                   Margin="14,0,0,8"
+                                                   VerticalAlignment="Bottom"
+                                                   Foreground="#6FFFFFFF"
+                                                   FontSize="8.5"/>
+                                        <StackPanel HorizontalAlignment="Right"
+                                                    VerticalAlignment="Center"
+                                                    Margin="0,0,7,0">
+                                            <Button Style="{StaticResource StepButtonStyle}"
+                                                    Content="▲"
+                                                    Tag="seconds:+1"
+                                                    Click="StepButton_Click"/>
+                                            <Button Style="{StaticResource StepButtonStyle}"
+                                                    Content="▼"
+                                                    Margin="0,4,0,0"
+                                                    Tag="seconds:-1"
+                                                    Click="StepButton_Click"/>
+                                        </StackPanel>
+                                    </Grid>
+                                </Border>
+                            </Grid>
+                        </Grid>
+
+                        <WrapPanel Grid.Row="3"
+                                   Margin="0,13,0,0"
+                                   VerticalAlignment="Top">
+                            <Button x:Name="Preset5"
+                                    Style="{StaticResource PresetButtonStyle}"
+                                    Content="5 min"
+                                    Tag="300"
+                                    Margin="0,0,7,7"
+                                    Click="PresetButton_Click"/>
+                            <Button x:Name="Preset10"
+                                    Style="{StaticResource PresetButtonStyle}"
+                                    Content="10 min"
+                                    Tag="600"
+                                    Margin="0,0,7,7"
+                                    Click="PresetButton_Click"/>
+                            <Button x:Name="Preset30"
+                                    Style="{StaticResource PresetButtonStyle}"
+                                    Content="30 min"
+                                    Tag="1800"
+                                    Margin="0,0,7,7"
+                                    Click="PresetButton_Click"/>
+                            <Button x:Name="Preset45"
+                                    Style="{StaticResource PresetButtonStyle}"
+                                    Content="45 min"
+                                    Tag="2700"
+                                    Margin="0,0,7,7"
+                                    Click="PresetButton_Click"/>
+                            <Button x:Name="Preset60"
+                                    Style="{StaticResource PresetButtonStyle}"
+                                    Content="1 hour"
+                                    Tag="3600"
+                                    Margin="0,0,7,7"
+                                    Click="PresetButton_Click"/>
+                            <Button x:Name="Preset120"
+                                    Style="{StaticResource PresetButtonStyle}"
+                                    Content="2 hours"
+                                    Tag="7200"
+                                    Margin="0,0,7,7"
+                                    Click="PresetButton_Click"/>
+                        </WrapPanel>
+
+                        <Grid Grid.Row="4" Margin="0,15,0,0">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="8"/>
+                                <ColumnDefinition Width="112"/>
+                            </Grid.ColumnDefinitions>
+
+                            <Button x:Name="ScheduleButton"
+                                    Grid.Column="0"
+                                    Style="{StaticResource SolidButtonStyle}"
+                                    Background="{StaticResource Ivory}"
+                                    Foreground="{StaticResource Ink}"
+                                    Content="JADWALKAN SHUTDOWN"
+                                    Click="ScheduleButton_Click"/>
+
+                            <Button Grid.Column="2"
+                                    Style="{StaticResource SolidButtonStyle}"
+                                    Background="{StaticResource Crimson}"
+                                    Foreground="White"
+                                    Content="BATALKAN"
+                                    Click="CancelButton_Click"/>
+                        </Grid>
+                    </Grid>
+                </Border>
+            </Grid>
+        </Grid>
+
+        <Grid x:Name="VideoProximityZone"
+              Width="150"
+              Height="130"
+              HorizontalAlignment="Right"
+              VerticalAlignment="Top"
+              Margin="0,58,0,0"
+              Background="#01000000"
+              MouseEnter="VideoProximityZone_MouseEnter"
+              MouseLeave="VideoProximityZone_MouseLeave">
+            <Button x:Name="VideoToggleButton"
+                    Width="36"
+                    Height="36"
+                    Margin="0,16,18,0"
+                    HorizontalAlignment="Right"
+                    VerticalAlignment="Top"
+                    Background="{StaticResource Ivory}"
+                    Foreground="{StaticResource Ink}"
+                    BorderThickness="0"
+                    Cursor="Hand"
+                    FontSize="15"
+                    FontWeight="Bold"
+                    Opacity="0"
+                    IsHitTestVisible="False"
+                    Content="✓"
+                    Click="VideoToggleButton_Click">
+                <Button.Template>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}"
+                                CornerRadius="11">
+                            <ContentPresenter HorizontalAlignment="Center"
+                                              VerticalAlignment="Center"/>
+                        </Border>
+                    </ControlTemplate>
+                </Button.Template>
+            </Button>
+        </Grid>
+
+        <Border x:Name="ToastBorder"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Bottom"
+                Margin="0,0,0,20"
+                Padding="13,9"
+                CornerRadius="11"
+                Background="{StaticResource Ivory}"
+                Opacity="0"
+                IsHitTestVisible="False">
+            <TextBlock x:Name="ToastText"
+                       Foreground="{StaticResource Ink}"
+                       FontSize="10.5"
+                       FontWeight="Bold"/>
+        </Border>
+    </Grid>
+</Window>
