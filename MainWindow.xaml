@@ -195,8 +195,9 @@
                                 CornerRadius="7"
                                 Background="#20000000"
                                 ClipToBounds="True">
-                            <Image Source="Assets/ShutdownTimer.ico"
-                                   Stretch="UniformToFill"/>
+                            <Image Source="Assets/app-logo.png"
+                                   Stretch="Uniform"
+                                   Margin="2"/>
                         </Border>
                         <TextBlock Text="SHUTDOWN TIMER"
                                    Margin="11,0,0,0"
