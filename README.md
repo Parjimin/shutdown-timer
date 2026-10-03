@@ -16,7 +16,7 @@ A small Windows shutdown scheduler with a clean 16:9 WPF interface, countdown, q
 - Cancel a pending shutdown at any time
 - 16:9 borderless WPF interface
 - Custom crimson power app icon
-- Optional looping MP4 background
+- Bundled looping MP4 background included in downloads
 - Hidden hover control to pause/resume the background video
 - Crash log written to `%LOCALAPPDATA%\ShutdownTimer\crash.log`
 - Portable and Lite Windows x64 builds
@@ -41,14 +41,14 @@ Extract the ZIP, then run `ShutdownTimer.exe`.
 
 Windows SmartScreen may warn about unsigned community-built executables. You can inspect the source and GitHub Actions workflow in this repository before running the app.
 
-## Optional video background
+## Video background
 
-The public release does **not** bundle copyrighted media.
+The release already includes `background.mp4`, so the app has its animated background immediately after extraction.
 
-To use your own background:
+You can replace it with your own video at any time:
 
-1. Put an MP4 file next to `ShutdownTimer.exe`.
-2. Rename it to `background.mp4`.
+1. Replace the existing `background.mp4` next to `ShutdownTimer.exe`.
+2. Keep the file name as `background.mp4`.
 3. Start the app.
 
 Recommended video settings:
