@@ -1,5 +1,9 @@
 # Shutdown Timer
 
+[![Build](https://github.com/Parjimin/shutdown-timer/actions/workflows/build.yml/badge.svg)](https://github.com/Parjimin/shutdown-timer/actions/workflows/build.yml)
+[![Release](https://img.shields.io/github/v/release/Parjimin/shutdown-timer)](https://github.com/Parjimin/shutdown-timer/releases/latest)
+[![License](https://img.shields.io/github/license/Parjimin/shutdown-timer)](LICENSE)
+
 A small Windows shutdown scheduler with a clean 16:9 WPF interface, countdown, quick presets, and optional looping video background.
 
 > Built for people who want a faster alternative to repeatedly typing `shutdown -s -t ...` in Command Prompt.
@@ -18,10 +22,19 @@ A small Windows shutdown scheduler with a clean 16:9 WPF interface, countdown, q
 
 ## Download
 
-Open the **Releases** section of this repository and download one of these packages:
+### Recommended: Portable
 
-- **ShutdownTimer-Portable-win-x64.zip** — recommended; includes the .NET runtime, no extra installation required.
-- **ShutdownTimer-Lite-win-x64.zip** — much smaller; requires the .NET 8 Desktop Runtime.
+**[Download ShutdownTimer Portable](https://github.com/Parjimin/shutdown-timer/releases/latest/download/ShutdownTimer-Portable-win-x64.zip)**
+
+Includes the .NET runtime, so no extra installation is required.
+
+### Small download: Lite
+
+**[Download ShutdownTimer Lite](https://github.com/Parjimin/shutdown-timer/releases/latest/download/ShutdownTimer-Lite-win-x64.zip)**
+
+Requires the .NET 8 Desktop Runtime.
+
+You can also browse the [latest release](https://github.com/Parjimin/shutdown-timer/releases/latest) and verify downloads using `SHA256SUMS.txt`.
 
 Extract the ZIP, then run `ShutdownTimer.exe`.
 
