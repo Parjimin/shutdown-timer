@@ -1,6 +1,7 @@
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
+using System.Text.Json;
 using System.Text.RegularExpressions;
 using System.Windows;
 using System.Windows.Controls;
@@ -30,6 +31,16 @@ public partial class MainWindow : Window
     private bool _suppressInputUpdate;
     private bool _uiReady;
 
+    private static readonly JsonSerializerOptions SessionJsonOptions = new()
+    {
+        WriteIndented = true
+    };
+
+    private sealed class SessionState
+    {
+        public DateTimeOffset ShutdownAtUtc { get; set; }
+    }
+
     public MainWindow()
     {
         InitializeComponent();
@@ -52,6 +63,7 @@ public partial class MainWindow : Window
     private void Window_Loaded(object sender, RoutedEventArgs e)
     {
         LoadBackgroundVideo();
+        RestoreSession();
         UpdatePresetSelection();
     }
 
@@ -164,6 +176,7 @@ public partial class MainWindow : Window
             return;
 
         _shutdownAt = DateTime.Now.AddSeconds(seconds);
+        SaveSession();
         _countdownTimer.Start();
         ScheduleButton.Content = "PERBARUI JADWAL";
         StateText.Text = "SCHEDULED";
@@ -179,6 +192,7 @@ public partial class MainWindow : Window
         bool cancelled = RunShutdown("/a", ignoreErrors: true);
 
         _shutdownAt = null;
+        ClearSession();
         _countdownTimer.Stop();
         ScheduleButton.Content = "JADWALKAN SHUTDOWN";
 
@@ -246,11 +260,106 @@ public partial class MainWindow : Window
             CountdownText.Text = "00:00:00";
             StatusText.Text = "Sedang shutdown";
             _countdownTimer.Stop();
+            ClearSession();
             return;
         }
 
         CountdownText.Text = FormatDuration(remaining);
         StatusText.Text = $"Mati sekitar {_shutdownAt.Value:HH:mm:ss}";
+    }
+
+    private static string GetAppDataFolder()
+    {
+        string folder = Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+            "ShutdownTimer");
+
+        Directory.CreateDirectory(folder);
+        return folder;
+    }
+
+    private static string GetSessionFilePath()
+        => Path.Combine(GetAppDataFolder(), "session.json");
+
+    private void SaveSession()
+    {
+        if (_shutdownAt is null)
+            return;
+
+        try
+        {
+            var state = new SessionState
+            {
+                ShutdownAtUtc = new DateTimeOffset(_shutdownAt.Value).ToUniversalTime()
+            };
+
+            string json = JsonSerializer.Serialize(state, SessionJsonOptions);
+            File.WriteAllText(GetSessionFilePath(), json);
+        }
+        catch
+        {
+            // Scheduling must keep working even if persistence fails.
+        }
+    }
+
+    private static void ClearSession()
+    {
+        try
+        {
+            string path = GetSessionFilePath();
+            if (File.Exists(path))
+                File.Delete(path);
+        }
+        catch
+        {
+            // A stale session file is less important than keeping the app usable.
+        }
+    }
+
+    private void RestoreSession()
+    {
+        string path = GetSessionFilePath();
+
+        if (!File.Exists(path))
+            return;
+
+        try
+        {
+            string json = File.ReadAllText(path);
+            SessionState? state = JsonSerializer.Deserialize<SessionState>(json);
+
+            if (state is null || state.ShutdownAtUtc == default)
+            {
+                ClearSession();
+                return;
+            }
+
+            DateTime shutdownAtLocal = state.ShutdownAtUtc.LocalDateTime;
+            TimeSpan remaining = shutdownAtLocal - DateTime.Now;
+
+            if (remaining <= TimeSpan.Zero)
+            {
+                ClearSession();
+                return;
+            }
+
+            _shutdownAt = shutdownAtLocal;
+
+            int remainingSeconds = Math.Max(1, (int)Math.Ceiling(remaining.TotalSeconds));
+            SetDuration(remainingSeconds);
+
+            _countdownTimer.Start();
+            ScheduleButton.Content = "PERBARUI JADWAL";
+            StateText.Text = "SCHEDULED";
+            StateDot.Fill = new SolidColorBrush(Color.FromRgb(243, 238, 232));
+
+            UpdateCountdown();
+            ShowToast("Sesi shutdown dipulihkan");
+        }
+        catch
+        {
+            ClearSession();
+        }
     }
 
     private void PreviewCurrentDuration()
