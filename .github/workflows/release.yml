@@ -61,7 +61,7 @@ jobs:
           VERSION: ${{ steps.version.outputs.version }}
           TAG: ${{ steps.version.outputs.tag }}
         run: |
-          $notes = "Windows x64 builds. Portable includes the .NET runtime. Lite requires the .NET 8 Desktop Runtime. To add your own background, put an MP4 named background.mp4 next to ShutdownTimer.exe. No copyrighted background media is bundled."
+          $notes = "Windows x64 builds. Portable includes the .NET runtime. Lite requires the .NET 8 Desktop Runtime. Both downloads include background.mp4, so the animated background works immediately after extraction. You can replace background.mp4 with your own 16:9 MP4 at any time."
           gh release view $env:TAG --repo "${{ github.repository }}" *> $null
           if ($LASTEXITCODE -eq 0) {
             gh release upload $env:TAG .\dist\ShutdownTimer-Lite-win-x64.zip .\dist\ShutdownTimer-Portable-win-x64.zip .\dist\SHA256SUMS.txt --clobber --repo "${{ github.repository }}"
