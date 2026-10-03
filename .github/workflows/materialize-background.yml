@@ -1,0 +1,45 @@
+name: Materialize bundled background video
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "Assets/video_base64/**"
+      - ".github/workflows/materialize-background.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  materialize:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Reconstruct and verify background.mp4
+        shell: bash
+        run: |
+          cat Assets/video_base64/chunk_*.b64 | base64 --decode > background.mp4
+          test -s background.mp4
+          actual="$(sha256sum background.mp4 | awk '{print $1}')"
+          expected="c14c1cae681235688327146b07d3d4dc9ce868de8a729b40a57b167d8c106c94"
+          echo "background size: $(stat -c%s background.mp4) bytes"
+          echo "sha256: $actual"
+          if [ "$actual" != "$expected" ]; then
+            echo "Checksum mismatch"
+            exit 1
+          fi
+
+      - name: Commit bundled video and clean transport files
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -f background.mp4
+          git rm -r Assets/video_base64
+          git rm .github/workflows/materialize-background.yml
+          git commit -m "Bundle default background video [skip ci]"
+          git push
