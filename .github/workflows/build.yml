@@ -1,0 +1,46 @@
+name: Build
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET 8
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "8.0.x"
+
+      - name: Publish Lite
+        shell: pwsh
+        run: dotnet publish .\ShutdownTimer.csproj -c Release -r win-x64 --self-contained false -p:PublishSingleFile=true -p:DebugType=None -p:DebugSymbols=false -o .\artifacts\lite
+
+      - name: Publish Portable
+        shell: pwsh
+        run: dotnet publish .\ShutdownTimer.csproj -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -p:EnableCompressionInSingleFile=true -p:DebugType=None -p:DebugSymbols=false -o .\artifacts\portable
+
+      - name: Upload Lite artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ShutdownTimer-Lite-win-x64
+          path: .\artifacts\lite\
+          if-no-files-found: error
+
+      - name: Upload Portable artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ShutdownTimer-Portable-win-x64
+          path: .\artifacts\portable\
+          if-no-files-found: error
