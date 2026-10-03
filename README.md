@@ -13,6 +13,8 @@ A small Windows shutdown scheduler with a clean 16:9 WPF interface, countdown, q
 - Schedule Windows shutdown in hours, minutes, and seconds
 - Quick presets: 5, 10, 30, 45 minutes, 1 hour, and 2 hours
 - Live countdown and scheduled shutdown time
+- Persistent active session: close and reopen the app without losing the countdown
+- Single-instance behavior: launching the app again focuses the existing window instead of opening a duplicate
 - Cancel a pending shutdown at any time
 - 16:9 borderless WPF interface
 - Custom crimson power app icon
@@ -62,7 +64,18 @@ Recommended video settings:
 
 If `background.mp4` is missing or cannot be played, the app falls back to a dark background.
 
+## Persistent session
+
+When a shutdown is scheduled, Shutdown Timer stores only the target shutdown time in:
+
+`%LOCALAPPDATA%\ShutdownTimer\session.json`
+
+Closing the app does not cancel the Windows shutdown timer. Reopening the app restores the same active session and recalculates the remaining time from the saved target time.
+
+Only one app instance is allowed per Windows user session. Opening `ShutdownTimer.exe` again while it is already running brings the existing window to the front.
+
 ## How it works
+
 
 Shutdown Timer uses Windows' built-in commands:
 
