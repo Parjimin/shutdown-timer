@@ -6,9 +6,5 @@ artifacts/
 *.suo
 *.pdb
 
-# User-provided media is intentionally not distributed
-background.mp4
-Assets/background.mp4
-
 # Local diagnostics
 crash.log
